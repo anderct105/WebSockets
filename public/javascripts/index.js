@@ -1,4 +1,4 @@
-const serverURL = "192.168.1.133" + ":" +  window.location.port;
+const serverURL = window.location.hostname + ":" +  window.location.port;
 
 window.onload = function(){
 
