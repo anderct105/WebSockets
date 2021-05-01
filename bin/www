@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 /**
  * Module dependencies.
  */
@@ -9,6 +9,7 @@ var debug = require('debug')('sockets:server');
 var http = require('http');
 var fs = require('fs');
 var https = require('https');
+require('https').globalAgent.options.rejectUnauthorized = false;
 
 /**
  * Get port from environment and store in Express.
@@ -32,14 +33,14 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 
-
+const path = require("path")
 const httpsServer = https.createServer({
-  key: fs.readFileSync('/etc/letsencrypt/live/anderct105.me/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/anderct105.me/fullchain.pem')
+  key: fs.readFileSync(path.join(__dirname, '../key1.pem')),
+  cert: fs.readFileSync(path.join(__dirname, '../cert1.pem'))
 }, app);
 
 httpsServer
-    .listen(443, function () {
+    .listen(3030, function () {
       console.log('Example app listening on port 3030! Go to https://localhost:3030/')
     });
 
@@ -53,7 +54,6 @@ let desktopSocket = null;
 
 // the socket can be a phone or a desktop
 realtimeListener.on('connection', function (socket) {
-
   // receives a connect message from a desktop (for this example, we will only have one)
   socket.on("desktop-connect", function () {
     console.log("Desktop Connected");
@@ -61,11 +61,11 @@ realtimeListener.on('connection', function (socket) {
   });
 
   // receives a connect message from a phone
-  socket.on("phone-connect", function () {
+  socket.on("phone-connect", function (data) {
     console.log("Phone Connected");
     if (desktopSocket) {
       // ... informs desktop that a phone has connected
-      desktopSocket.emit('phone-connect');
+      desktopSocket.emit('phone- connect');
     }
   });
 
@@ -74,6 +74,12 @@ realtimeListener.on('connection', function (socket) {
     console.log("Phone moved:" + data.beta  );
     if (desktopSocket)
       desktopSocket.emit('phone-move', data.beta);
+  });
+
+  socket.conn.on('message', (msg) => {
+    if(!Object.keys(socket._events).includes(msg.split('"')[1])) {
+      console.log(`WARNING: Unhandled Event: ${msg}`);
+    }
   });
 });
 

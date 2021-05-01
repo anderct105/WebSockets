@@ -1,4 +1,4 @@
-const serverURL = window.location.hostname + ":" +  window.location.port;
+const serverURL = "192.168.1.133" + ":" +  window.location.port;
 
 window.onload = function(){
 
@@ -6,9 +6,17 @@ window.onload = function(){
         // register phone connection
         socket.emit('phone-connect');
 
+        socket.on("connection", function () {
+            console.log("conectado")
+        })
+
         socket.on('crash', function() {
             navigator.vibrate(500);
         });
+
+        socket.on("disconnect", function () {
+            console.log("desconectado")
+        })
 
     var update = function(id, value) {
         if (value) {
